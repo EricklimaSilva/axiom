@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1600" viewBox="0 0 1200 1600">
+  <rect width="1200" height="1600" fill="#f4f1ff"/>
+  <rect x="110" y="120" width="980" height="1360" rx="36" fill="#ffffff" stroke="#7c3aed" stroke-width="8"/>
+  <rect x="190" y="230" width="820" height="220" rx="24" fill="#efe7ff"/>
+  <text x="600" y="350" text-anchor="middle" font-family="Arial, sans-serif" font-size="70" fill="#5b21b6">Certificado</text>
+  <text x="600" y="440" text-anchor="middle" font-family="Arial, sans-serif" font-size="38" fill="#6b7280">Imagem de referência</text>
+  <circle cx="600" cy="900" r="220" fill="none" stroke="#8b5cf6" stroke-width="24"/>
+  <path d="M470 900 L560 990 L730 780" fill="none" stroke="#8b5cf6" stroke-width="24" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

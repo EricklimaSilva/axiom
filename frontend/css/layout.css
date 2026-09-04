@@ -1,0 +1,31 @@
+.app {
+    display: flex;
+    min-height: 100vh;
+    background: var(--color-background);
+}
+
+.main-content {
+    flex: 1;
+    margin-left: var(--sidebar-width);
+    min-width: 0;
+    background: linear-gradient(180deg, #0b1020 0%, #0f172a 100%);
+}
+
+.page-content {
+    padding: 32px;
+    min-height: calc(100vh - var(--header-height));
+    background:
+        radial-gradient(circle at top, rgba(91, 124, 250, 0.08), transparent 34%),
+        var(--color-background);
+}
+
+.content-container {
+    width: 100%;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+#page {
+    background: var(--color-background);
+    min-height: calc(100vh - var(--header-height));
+}
