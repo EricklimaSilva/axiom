@@ -1,3 +1,4 @@
+import os
 import sys
 from pathlib import Path
 
@@ -8,7 +9,7 @@ BACKEND_DIR = Path(__file__).resolve().parent
 if str(BACKEND_DIR) not in sys.path:
     sys.path.insert(0, str(BACKEND_DIR))
 
-from config import DevelopmentConfig
+from config import DevelopmentConfig, ProductionConfig
 from extensions import db, migrate
 from axiom_models import Certificate, CodeProject, DashboardProject, LanguageStudy, Project, Setting, Site, StudyEntry
 from routes.api import api_bp
@@ -26,7 +27,15 @@ ALLOWED_METHODS = ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"]
 ALLOWED_HEADERS = ["Content-Type", "Authorization"]
 
 
-def create_app(config_class=DevelopmentConfig):
+def get_default_config():
+    environment = os.getenv("APP_ENV", os.getenv("FLASK_ENV", "development")).lower()
+    if environment in {"production", "prod"}:
+        return ProductionConfig
+    return DevelopmentConfig
+
+
+def create_app(config_class=None):
+    config_class = config_class or get_default_config()
     app = Flask(__name__)
     app.config.from_object(config_class)
 
