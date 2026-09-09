@@ -95,9 +95,11 @@ export function initSettingsPage() {
             return;
         }
 
-        const authenticated = enableAdminSession(providedKey);
+        const authenticated = await enableAdminSession(providedKey);
         if (!authenticated) {
             window.alert("Chave administrativa inválida.");
+            // ensure any existing admin session is cleared
+            disableAdminSession();
             return;
         }
 

@@ -70,6 +70,20 @@ def _handle_not_found(resource_name: str):
 
 
 # ---------------------------------------------------------------------------
+# Admin verification
+# ---------------------------------------------------------------------------
+
+
+@api_bp.post("/api/admin/verify")
+def verify_admin_route():
+    admin_error = require_admin_access()
+    if admin_error is not None:
+        return admin_error
+
+    return jsonify({"success": True}), 200
+
+
+# ---------------------------------------------------------------------------
 # Studies
 # ---------------------------------------------------------------------------
 

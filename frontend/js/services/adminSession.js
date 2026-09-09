@@ -45,17 +45,40 @@ export function isAdminAuthenticated() {
     return getAdminMode() && Boolean(getAdminToken());
 }
 
-export function enableAdminSession(adminKey) {
+export async function enableAdminSession(adminKey) {
     const normalizedKey = String(adminKey || "").trim();
 
     if (!normalizedKey) {
         return false;
     }
 
-    writeSessionStorage(ADMIN_MODE_KEY, "true");
-    writeSessionStorage(ADMIN_TOKEN_KEY, normalizedKey);
+    // Verify key with backend before enabling session
+    try {
+        const resp = await fetch("/api/admin/verify", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-ErickOS-Admin-Key": normalizedKey,
+            },
+            body: JSON.stringify({}),
+        });
 
-    return true;
+        if (resp.status === 200) {
+            writeSessionStorage(ADMIN_MODE_KEY, "true");
+            writeSessionStorage(ADMIN_TOKEN_KEY, normalizedKey);
+            return true;
+        }
+
+        // On any non-200 (including 403), ensure admin session is cleared
+        removeSessionStorage(ADMIN_MODE_KEY);
+        removeSessionStorage(ADMIN_TOKEN_KEY);
+        return false;
+    } catch (e) {
+        // Network or other error: do not enable admin session
+        removeSessionStorage(ADMIN_MODE_KEY);
+        removeSessionStorage(ADMIN_TOKEN_KEY);
+        return false;
+    }
 }
 
 export function disableAdminSession() {
