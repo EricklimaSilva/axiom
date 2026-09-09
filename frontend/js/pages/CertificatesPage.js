@@ -22,16 +22,24 @@ function createCertificatesMarkup(items = [], adminMode = false) {
 
     return `
         <div class="certificate-shelf">
-            ${items.map(item => `
-                <article class="certificate-card" data-certificate-id="${item.id}">
+            ${items.map(item => {
+                const src = escapeHtml(item.cover_image_path || "/assets/certificates/placeholder-certificado.svg");
+                const certUrl = escapeHtml(item.certificate_url || "");
+                return `
+                <article class="certificate-card" data-certificate-id="${item.id}" data-certificate-url="${certUrl}">
                     <div class="certificate-cover">
-                        <img src="${escapeHtml(item.certificate_url || "./assets/images/default-certificate.svg")}" alt="Certificado ${escapeHtml(item.name)}">
+                        <a class="certificate-link" href="#" data-certificate-url="${certUrl}">
+                            <img src="${src}" alt="Certificado ${escapeHtml(item.name)}" onerror="this.onerror=null;this.src='/assets/certificates/placeholder-certificado.svg'">
+                            <div class="certificate-overlay">
+                                <div class="certificate-overlay-inner">
+                                    <h4>${escapeHtml(item.name)}</h4>
+                                    <p class="overlay-institution">${escapeHtml(item.institution || "Instituição")}</p>
+                                    <p class="overlay-date">${escapeHtml(item.issue_date || "Sem data")}</p>
+                                </div>
+                            </div>
+                        </a>
                     </div>
                     <div class="certificate-content">
-                        <div class="certificate-meta">
-                            <span class="certificate-badge">${escapeHtml(item.institution || "Instituição")}</span>
-                            <span class="certificate-time">${escapeHtml(item.issue_date || "Sem data")}</span>
-                        </div>
                         <h3>${escapeHtml(item.name)}</h3>
                         <p class="certificate-synopsis">${escapeHtml(item.description || "")}</p>
                         <div class="certificate-footer">
@@ -45,14 +53,15 @@ function createCertificatesMarkup(items = [], adminMode = false) {
                         ` : ""}
                     </div>
                 </article>
-            `).join("")}
+            `}).join("")}
         </div>
     `;
 }
 
 function buildCertificateForm(certificate = null) {
     return `
-        <section class="projects-page-surface">
+        <section class="projects-page-surface certificate-admin">
+            <h2 class="admin-form-title">Adicionar certificado</h2>
             <form id="certificate-form" class="projects-form">
                 <div class="projects-form-grid">
                     <label>
@@ -71,11 +80,15 @@ function buildCertificateForm(certificate = null) {
                         <span>URL do certificado</span>
                         <input type="url" name="certificate_url" value="${escapeHtml(certificate?.certificate_url || "")}">
                     </label>
+                    <label>
+                        <span>Capa do certificado (caminho público)</span>
+                        <input type="text" name="cover_image_path" placeholder="/assets/certificates/meu-certificado.webp" value="${escapeHtml(certificate?.cover_image_path || "")}">
+                    </label>
                 </div>
-                <label class="study-form-full">
-                    <span>Descrição</span>
-                    <textarea name="description" rows="3">${escapeHtml(certificate?.description || "")}</textarea>
-                </label>
+                    <label class="study-form-full compact">
+                        <span>Descrição</span>
+                        <textarea name="description" rows="2">${escapeHtml(certificate?.description || "")}</textarea>
+                    </label>
                 <div class="projects-form-actions">
                     <button type="submit">${certificate ? "Atualizar certificado" : "Salvar certificado"}</button>
                     ${certificate ? `<button type="button" id="certificate-cancel-edit">Cancelar edição</button>` : ""}
@@ -110,12 +123,15 @@ export async function CertificatesPage() {
                     </div>
                 </section>
 
-                ${adminMode ? buildCertificateForm() : ""}
+                <section class="projects-page-surface certificates-section">
+                    <div class="certificates-top">
+                        <input type="search" id="certificate-search" placeholder="Buscar certificado..." aria-label="Buscar certificados" class="projects-search-input">
+                    </div>
 
-                <section class="projects-page-surface">
-                    <input type="search" id="certificate-search" placeholder="Buscar certificado..." aria-label="Buscar certificados" class="projects-search-input">
                     ${createCertificatesMarkup(certificates, adminMode)}
                 </section>
+
+                ${adminMode ? buildCertificateForm() : ""}
             </div>
         </div>
     `;
@@ -144,6 +160,7 @@ function populateCertificateForm(certificate) {
     form.querySelector('input[name="institution"]').value = certificate.institution || "";
     form.querySelector('input[name="issue_date"]').value = certificate.issue_date || "";
     form.querySelector('input[name="certificate_url"]').value = certificate.certificate_url || "";
+    form.querySelector('input[name="cover_image_path"]').value = certificate.cover_image_path || "";
     form.querySelector('textarea[name="description"]').value = certificate.description || "";
 
     if (feedback) {
@@ -177,6 +194,7 @@ export function initCertificatesPage() {
             institution: formData.get("institution") || "",
             issue_date: formData.get("issue_date") || "",
             certificate_url: formData.get("certificate_url") || "",
+            cover_image_path: formData.get("cover_image_path") || "",
             description: formData.get("description") || "",
         };
 
@@ -230,6 +248,24 @@ export function initCertificatesPage() {
             }
         }
 
+        // handle clicks on certificate links / cards to open certificate_url in new tab
+        const certLink = event.target.closest('.certificate-link');
+        if (certLink) {
+            const url = certLink.dataset.certificateUrl;
+            if (url) {
+                window.open(url, '_blank', 'noopener');
+            }
+            event.preventDefault();
+            return;
+        }
+
+        const card = event.target.closest('.certificate-card');
+        if (card && !event.target.closest('.study-action-btn')) {
+            const url = card.dataset.certificateUrl;
+            if (url) {
+                window.open(url, '_blank', 'noopener');
+            }
+        }
         if (cancelButton) {
             editingCertificateId = null;
             await refreshCertificatesPage();

@@ -208,6 +208,7 @@ def serialize_certificate(certificate: Certificate) -> dict[str, Any]:
         "issue_date": certificate.issue_date.isoformat() if certificate.issue_date else None,
         "certificate_url": certificate.certificate_url,
         "description": certificate.description,
+        "cover_image_path": certificate.cover_image_path or "/assets/certificates/placeholder-certificado.svg",
         "created_at": certificate.created_at.isoformat() if certificate.created_at else None,
         "updated_at": certificate.updated_at.isoformat() if certificate.updated_at else None,
     }
@@ -496,6 +497,7 @@ def create_certificate(payload: dict[str, Any]) -> dict[str, Any]:
         issue_date=_date(data.get("issue_date") or data.get("completedAt"), "issue_date"),
         certificate_url=_string(data.get("certificate_url") or data.get("image"), "certificate_url"),
         description=_string(data.get("description") or data.get("synopsis"), "description"),
+        cover_image_path=_string(data.get("cover_image_path"), "cover_image_path"),
     )
     _save(certificate)
     return serialize_certificate(certificate)
@@ -512,6 +514,7 @@ def update_certificate(certificate_id: int, payload: dict[str, Any]) -> dict[str
     certificate.issue_date = _date(data.get("issue_date") or data.get("completedAt"), "issue_date")
     certificate.certificate_url = _string(data.get("certificate_url") or data.get("image"), "certificate_url")
     certificate.description = _string(data.get("description") or data.get("synopsis"), "description")
+    certificate.cover_image_path = _string(data.get("cover_image_path"), "cover_image_path")
 
     _save(certificate)
     return serialize_certificate(certificate)

@@ -97,6 +97,7 @@ class Certificate(db.Model, TimestampMixin):
     issue_date = db.Column(db.Date, nullable=True)
     certificate_url = db.Column(db.Text, nullable=True)
     description = db.Column(db.Text, nullable=True)
+    cover_image_path = db.Column(db.Text, nullable=True)
 
 
 class CodeProject(db.Model, TimestampMixin):
