@@ -1,0 +1,263 @@
+/* Responsive overrides for mobile and tablet
+   Keeps desktop visuals intact while ensuring usability on small screens
+*/
+
+/* Prevent accidental horizontal overflow globally; calendar and other
+   components that need horizontal scrolling opt-in with overflow-x:auto */
+body, .app {
+    overflow-x: hidden;
+}
+
+/* -------------------------
+   Mobile: up to 768px
+   ------------------------- */
+@media (max-width: 768px) {
+    :root {
+        --sidebar-width: 0px;
+        --header-height: 64px;
+    }
+
+    /* Make the sidebar a horizontal top strip so it doesn't cover the screen */
+    .sidebar {
+        position: relative;
+        width: 100%;
+        height: auto;
+        padding: 8px 12px;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 8px;
+        overflow-x: auto;
+        border-right: none;
+        border-bottom: 1px solid var(--color-border);
+    }
+
+    /* Stack sidebar on top and make main content full-width */
+    .app {
+        flex-direction: column;
+    }
+
+    .main-content {
+        width: 100%;
+        min-width: 0;
+        margin-left: 0;
+    }
+
+    .sidebar .sidebar-logo p {
+        display: none;
+    }
+
+    .sidebar h2 {
+        font-size: 20px;
+        margin-right: 8px;
+    }
+
+    .sidebar nav ul {
+        display: flex;
+        flex-direction: row;
+        gap: 6px;
+        margin: 0;
+    }
+
+    .sidebar nav a {
+        padding: 8px 10px;
+        white-space: nowrap;
+    }
+
+    /* Ensure nav is horizontally scrollable without cutting items */
+    .sidebar nav ul {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none; /* Firefox */
+    }
+
+    .sidebar nav ul::-webkit-scrollbar {
+        display: none; /* WebKit */
+    }
+
+    .sidebar nav a {
+        flex: 0 0 auto; /* don't shrink, keep space for icon+text */
+        white-space: nowrap;
+    }
+
+    /* Main content should occupy full width on mobile */
+    .main-content {
+        margin-left: 0;
+    }
+
+    .page-content {
+        padding: 16px;
+        min-height: calc(100vh - var(--header-height));
+    }
+
+    .content-container {
+        max-width: 100%;
+        padding: 0 8px;
+    }
+
+    /* Welcome page: make the three cards stack on small screens */
+    .welcome-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    .welcome-card,
+    .welcome-info-card,
+    .project-card {
+        min-width: 0;
+        word-break: normal;
+        overflow-wrap: break-word;
+        white-space: normal;
+    }
+
+    /* Cards -> single column */
+    .dashboard-stats,
+    .consistency-insights,
+    .certificate-shelf,
+    .author-codes-list,
+    .sites-grid,
+    .settings-list {
+        grid-template-columns: 1fr !important;
+    }
+
+    .dashboard-bottom {
+        grid-template-columns: 1fr !important;
+    }
+
+    .study-form-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    .project-card,
+    .certificate-card,
+    .site-card,
+    .settings-card,
+    .language-form-card,
+    .author-code-card {
+        padding: 12px;
+        margin-top: 12px;
+        border-radius: 12px;
+    }
+
+    .study-submit-btn {
+        width: 100%;
+    }
+
+    /* Tables must not overflow horizontally */
+    .page-content table,
+    table {
+        width: 100%;
+        display: block;
+        overflow-x: auto;
+    }
+
+    .stat-card h2 {
+        font-size: 28px;
+    }
+
+    /* Header compact */
+    .header {
+        padding: 0 12px;
+        height: var(--header-height);
+    }
+
+    .header-title h1 {
+        font-size: 20px;
+    }
+
+    /* Timeline adjustments to avoid overflow */
+    .timeline::before {
+        left: 8px;
+        transform: none;
+    }
+
+    .timeline-left,
+    .timeline-right {
+        padding: 0;
+    }
+
+    /* Calendar / heatmap: allow internal scrolling but fit container */
+    .consistency-calendar {
+        padding: 12px;
+        overflow-x: auto;
+    }
+
+    .consistency-calendar-content,
+    .consistency-content,
+    .consistency-grid {
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .author-code-editor pre,
+    .author-code-editor code {
+        font-size: 0.85rem;
+        white-space: pre-wrap;
+        word-break: break-word;
+    }
+}
+
+
+/* -------------------------
+   Tablet: 769px - 1024px
+   ------------------------- */
+@media (min-width: 769px) and (max-width: 1024px) {
+    :root {
+        --sidebar-width: 200px;
+        --header-height: 68px;
+    }
+
+    .content-container {
+        max-width: 1000px;
+    }
+
+    .dashboard-stats {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .consistency-insights {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .dashboard-bottom {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .study-form-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .page-content {
+        padding: 20px;
+    }
+
+    /* Welcome page: two columns on tablet when space allows */
+    .welcome-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .sidebar {
+        padding: 20px 16px;
+        width: var(--sidebar-width);
+        height: 100vh;
+        position: fixed;
+    }
+
+    .main-content {
+        margin-left: var(--sidebar-width);
+    }
+}
+
+
+/* -------------------------
+   Desktop: 1025px and above
+   Keep existing desktop styles but ensure no accidental overflow
+   ------------------------- */
+@media (min-width: 1025px) {
+    body {
+        overflow-x: visible;
+    }
+
+    .content-container {
+        max-width: 1400px;
+    }
+}
