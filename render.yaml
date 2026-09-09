@@ -4,7 +4,9 @@ services:
     runtime: python
     plan: free
     buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn backend.app:app --bind 0.0.0.0:$PORT
+    # Run the project's bootstrap which applies migrations, then start Gunicorn.
+    # This avoids using Render preDeployCommand (not available on Free plan)
+    startCommand: python3 backend/bootstrap_postgres.py && gunicorn backend.app:app --bind 0.0.0.0:$PORT
     healthCheckPath: /api/health
     envVars:
       - key: APP_ENV
