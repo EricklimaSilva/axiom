@@ -64,13 +64,17 @@ def ensure_database_exists() -> str:
     if password:
         connect_kwargs["password"] = password
 
-    with psycopg2.connect(**connect_kwargs) as connection:
+    connection = psycopg2.connect(**connect_kwargs)
+    try:
+        # CREATE DATABASE must run outside an explicit transaction block.
         connection.autocommit = True
         with connection.cursor() as cursor:
             cursor.execute("SELECT 1 FROM pg_database WHERE datname = %s", (database_name,))
             exists = cursor.fetchone() is not None
             if not exists:
                 cursor.execute(sql.SQL("CREATE DATABASE {} ENCODING 'UTF8'").format(sql.Identifier(database_name)))
+    finally:
+        connection.close()
 
     return maintenance_url
 

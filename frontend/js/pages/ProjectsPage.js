@@ -116,7 +116,7 @@ function buildProjectForm(project = null) {
 }
 
 export async function ProjectsPage() {
-    const adminMode = localStorage.getItem("erickos-admin-mode") === "true";
+    const adminMode = sessionStorage.getItem("erickos-admin-mode") === "true";
     let projects = [];
 
     try {

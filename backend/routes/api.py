@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from flask import Blueprint, jsonify, request
+from admin_auth import require_admin_access
 
 from services.api_service import (
     ValidationError,
@@ -88,6 +89,10 @@ def get_study_route(study_id):
 
 @api_bp.post("/api/studies")
 def create_study_route():
+    admin_error = require_admin_access()
+    if admin_error is not None:
+        return admin_error
+
     try:
         study = create_study(request.get_json(silent=True) or {})
         return _success(study, "Sessão de estudo registrada com sucesso.", 201)
@@ -99,6 +104,10 @@ def create_study_route():
 
 @api_bp.put("/api/studies/<int:study_id>")
 def update_study_route(study_id):
+    admin_error = require_admin_access()
+    if admin_error is not None:
+        return admin_error
+
     try:
         study = update_study(study_id, request.get_json(silent=True) or {})
         if study is None:
@@ -112,6 +121,10 @@ def update_study_route(study_id):
 
 @api_bp.delete("/api/studies/<int:study_id>")
 def delete_study_route(study_id):
+    admin_error = require_admin_access()
+    if admin_error is not None:
+        return admin_error
+
     try:
         deleted = delete_study(study_id)
         if not deleted:
@@ -141,6 +154,10 @@ def get_project_route(project_id):
 
 @api_bp.post("/api/projects")
 def create_project_route():
+    admin_error = require_admin_access()
+    if admin_error is not None:
+        return admin_error
+
     try:
         project = create_project(request.get_json(silent=True) or {})
         return _success(project, "Projeto criado com sucesso.", 201)
@@ -152,6 +169,10 @@ def create_project_route():
 
 @api_bp.put("/api/projects/<int:project_id>")
 def update_project_route(project_id):
+    admin_error = require_admin_access()
+    if admin_error is not None:
+        return admin_error
+
     try:
         project = update_project(project_id, request.get_json(silent=True) or {})
         if project is None:
@@ -165,6 +186,10 @@ def update_project_route(project_id):
 
 @api_bp.delete("/api/projects/<int:project_id>")
 def delete_project_route(project_id):
+    admin_error = require_admin_access()
+    if admin_error is not None:
+        return admin_error
+
     try:
         deleted = delete_project(project_id)
         if not deleted:
@@ -194,6 +219,10 @@ def get_language_route(language_id):
 
 @api_bp.post("/api/languages")
 def create_language_route():
+    admin_error = require_admin_access()
+    if admin_error is not None:
+        return admin_error
+
     try:
         language = create_language(request.get_json(silent=True) or {})
         return _success(language, "Sessão de idioma registrada com sucesso.", 201)
@@ -205,6 +234,10 @@ def create_language_route():
 
 @api_bp.put("/api/languages/<int:language_id>")
 def update_language_route(language_id):
+    admin_error = require_admin_access()
+    if admin_error is not None:
+        return admin_error
+
     try:
         language = update_language(language_id, request.get_json(silent=True) or {})
         if language is None:
@@ -218,6 +251,10 @@ def update_language_route(language_id):
 
 @api_bp.delete("/api/languages/<int:language_id>")
 def delete_language_route(language_id):
+    admin_error = require_admin_access()
+    if admin_error is not None:
+        return admin_error
+
     try:
         deleted = delete_language(language_id)
         if not deleted:
@@ -247,6 +284,10 @@ def get_certificate_route(certificate_id):
 
 @api_bp.post("/api/certificates")
 def create_certificate_route():
+    admin_error = require_admin_access()
+    if admin_error is not None:
+        return admin_error
+
     try:
         certificate = create_certificate(request.get_json(silent=True) or {})
         return _success(certificate, "Certificado criado com sucesso.", 201)
@@ -258,6 +299,10 @@ def create_certificate_route():
 
 @api_bp.put("/api/certificates/<int:certificate_id>")
 def update_certificate_route(certificate_id):
+    admin_error = require_admin_access()
+    if admin_error is not None:
+        return admin_error
+
     try:
         certificate = update_certificate(certificate_id, request.get_json(silent=True) or {})
         if certificate is None:
@@ -271,6 +316,10 @@ def update_certificate_route(certificate_id):
 
 @api_bp.delete("/api/certificates/<int:certificate_id>")
 def delete_certificate_route(certificate_id):
+    admin_error = require_admin_access()
+    if admin_error is not None:
+        return admin_error
+
     try:
         deleted = delete_certificate(certificate_id)
         if not deleted:
@@ -301,6 +350,10 @@ def get_code_route(code_id):
 
 @api_bp.post("/api/codes")
 def create_code_route():
+    admin_error = require_admin_access()
+    if admin_error is not None:
+        return admin_error
+
     try:
         code = create_code(request.get_json(silent=True) or {})
         return _success(code, "Código criado com sucesso.", 201)
@@ -312,6 +365,10 @@ def create_code_route():
 
 @api_bp.put("/api/codes/<int:code_id>")
 def update_code_route(code_id):
+    admin_error = require_admin_access()
+    if admin_error is not None:
+        return admin_error
+
     try:
         code = update_code(code_id, request.get_json(silent=True) or {})
         if code is None:
@@ -325,6 +382,10 @@ def update_code_route(code_id):
 
 @api_bp.delete("/api/codes/<int:code_id>")
 def delete_code_route(code_id):
+    admin_error = require_admin_access()
+    if admin_error is not None:
+        return admin_error
+
     try:
         deleted = delete_code(code_id)
         if not deleted:
@@ -354,6 +415,10 @@ def get_site_route(site_id):
 
 @api_bp.post("/api/sites")
 def create_site_route():
+    admin_error = require_admin_access()
+    if admin_error is not None:
+        return admin_error
+
     try:
         site = create_site(request.get_json(silent=True) or {})
         return _success(site, "Site criado com sucesso.", 201)
@@ -365,6 +430,10 @@ def create_site_route():
 
 @api_bp.put("/api/sites/<int:site_id>")
 def update_site_route(site_id):
+    admin_error = require_admin_access()
+    if admin_error is not None:
+        return admin_error
+
     try:
         site = update_site(site_id, request.get_json(silent=True) or {})
         if site is None:
@@ -378,6 +447,10 @@ def update_site_route(site_id):
 
 @api_bp.delete("/api/sites/<int:site_id>")
 def delete_site_route(site_id):
+    admin_error = require_admin_access()
+    if admin_error is not None:
+        return admin_error
+
     try:
         deleted = delete_site(site_id)
         if not deleted:
@@ -407,6 +480,10 @@ def get_dashboard_route(dashboard_id):
 
 @api_bp.post("/api/dashboards")
 def create_dashboard_route():
+    admin_error = require_admin_access()
+    if admin_error is not None:
+        return admin_error
+
     try:
         dashboard = create_dashboard_project(request.get_json(silent=True) or {})
         return _success(dashboard, "Dashboard criado com sucesso.", 201)
@@ -418,6 +495,10 @@ def create_dashboard_route():
 
 @api_bp.put("/api/dashboards/<int:dashboard_id>")
 def update_dashboard_route(dashboard_id):
+    admin_error = require_admin_access()
+    if admin_error is not None:
+        return admin_error
+
     try:
         dashboard = update_dashboard_project(dashboard_id, request.get_json(silent=True) or {})
         if dashboard is None:
@@ -431,6 +512,10 @@ def update_dashboard_route(dashboard_id):
 
 @api_bp.delete("/api/dashboards/<int:dashboard_id>")
 def delete_dashboard_route(dashboard_id):
+    admin_error = require_admin_access()
+    if admin_error is not None:
+        return admin_error
+
     try:
         deleted = delete_dashboard_project(dashboard_id)
         if not deleted:
@@ -460,6 +545,10 @@ def get_setting_route(setting_id):
 
 @api_bp.post("/api/settings")
 def create_setting_route():
+    admin_error = require_admin_access()
+    if admin_error is not None:
+        return admin_error
+
     try:
         setting = create_setting(request.get_json(silent=True) or {})
         return _success(setting, "Configuração criada com sucesso.", 201)
@@ -471,6 +560,10 @@ def create_setting_route():
 
 @api_bp.put("/api/settings/<int:setting_id>")
 def update_setting_route(setting_id):
+    admin_error = require_admin_access()
+    if admin_error is not None:
+        return admin_error
+
     try:
         setting = update_setting(setting_id, request.get_json(silent=True) or {})
         if setting is None:
@@ -484,6 +577,10 @@ def update_setting_route(setting_id):
 
 @api_bp.delete("/api/settings/<int:setting_id>")
 def delete_setting_route(setting_id):
+    admin_error = require_admin_access()
+    if admin_error is not None:
+        return admin_error
+
     try:
         deleted = delete_setting(setting_id)
         if not deleted:

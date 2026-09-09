@@ -38,7 +38,7 @@ export async function DiaryPage() {
     const response = await getDashboardData();
     const dashboardData = response?.data ?? response;
     const recentStudiesMarkup = createRecentStudiesMarkup(dashboardData.recentStudies ?? []);
-    const adminMode = localStorage.getItem("erickos-admin-mode") === "true";
+    const adminMode = sessionStorage.getItem("erickos-admin-mode") === "true";
 
     return `
         <div class="page-content">
@@ -131,7 +131,7 @@ export function initDiaryPage() {
     const form = document.getElementById("study-form");
     const message = document.getElementById("study-form-message");
     const diaryContainer = document.getElementById("page");
-    const adminMode = localStorage.getItem("erickos-admin-mode") === "true";
+    const adminMode = sessionStorage.getItem("erickos-admin-mode") === "true";
 
     if (!diaryContainer) {
         return;

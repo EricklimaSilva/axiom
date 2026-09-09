@@ -362,17 +362,10 @@
 }
 
 
-.language-layout {
-    display: grid;
-    grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
-    gap: 1.25rem;
-    align-items: start;
-    margin-top: 1.25rem;
-}
-
-.language-column {
-    display: grid;
-    gap: 1.1rem;
+.language-consistency-section,
+.language-form-section,
+.language-records-section {
+    margin-top: 1.1rem;
 }
 
 .language-form-card,
@@ -518,13 +511,11 @@
 
 .language-consistency-shell {
     padding: 1rem;
+    container-type: inline-size;
+    width: 100%;
 }
 
 @media (max-width: 1024px) {
-    .language-layout {
-        grid-template-columns: 1fr;
-    }
-
     .language-session-item {
         grid-template-columns: 1fr;
     }

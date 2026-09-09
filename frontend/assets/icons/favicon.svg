@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Axiom">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#081229"/>
+      <stop offset="100%" stop-color="#132f4f"/>
+    </linearGradient>
+    <linearGradient id="neon" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1df2ff"/>
+      <stop offset="100%" stop-color="#3d7bff"/>
+    </linearGradient>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="1.2" result="b"/>
+      <feMerge>
+        <feMergeNode in="b"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <rect x="4" y="4" width="56" height="56" rx="14" fill="url(#bg)"/>
+
+  <g stroke="#1db6ff" stroke-opacity="0.35" stroke-width="1.2" fill="none">
+    <path d="M12 22H22"/>
+    <path d="M42 22H52"/>
+    <path d="M10 38H20"/>
+    <path d="M44 38H54"/>
+    <path d="M22 12V20"/>
+    <path d="M42 44V52"/>
+  </g>
+
+  <g fill="#1df2ff" fill-opacity="0.9">
+    <circle cx="12" cy="22" r="1.8"/>
+    <circle cx="52" cy="22" r="1.8"/>
+    <circle cx="10" cy="38" r="1.8"/>
+    <circle cx="54" cy="38" r="1.8"/>
+    <circle cx="22" cy="12" r="1.8"/>
+    <circle cx="42" cy="52" r="1.8"/>
+  </g>
+
+  <g filter="url(#glow)">
+    <path d="M32 14L46 48H39.9L36.9 40.8H27.1L24.1 48H18L32 14Z" fill="url(#neon)"/>
+    <path d="M29.4 34.5H34.6L32 28.1L29.4 34.5Z" fill="#dffbff"/>
+  </g>
+
+  <path d="M32 18L42.2 42.2H37.8L35.7 37.3H28.3L26.2 42.2H21.8L32 18Z" fill="none" stroke="#eaf9ff" stroke-opacity="0.65" stroke-width="0.8"/>
+</svg>

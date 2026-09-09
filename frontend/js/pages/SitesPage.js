@@ -105,7 +105,7 @@ async function loadSites() {
 }
 
 export async function SitesPage() {
-    const adminMode = localStorage.getItem("erickos-admin-mode") === "true";
+    const adminMode = sessionStorage.getItem("erickos-admin-mode") === "true";
     const sites = await loadSites();
 
     return `

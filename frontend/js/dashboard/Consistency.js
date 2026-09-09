@@ -29,14 +29,14 @@ const WEEKDAYS = [
 
 function formatDateKey(date) {
 
-    const year = date.getFullYear();
+    const year = date.getUTCFullYear();
 
     const month = String(
-        date.getMonth() + 1
+        date.getUTCMonth() + 1
     ).padStart(2, "0");
 
     const day = String(
-        date.getDate()
+        date.getUTCDate()
     ).padStart(2, "0");
 
     return `${year}-${month}-${day}`;
@@ -118,7 +118,8 @@ export function createConsistencyCells(
                         {
                             day: "2-digit",
                             month: "long",
-                            year: "numeric"
+                            year: "numeric",
+                            timeZone: "UTC"
                         }
                     );
 
@@ -129,7 +130,7 @@ export function createConsistencyCells(
                     studyDays[dateKey] || 0;
 
                 const isSelectedYear =
-                    currentDate.getFullYear() === selectedYear;
+                    currentDate.getUTCFullYear() === selectedYear;
 
                 const status =
                     level > 0

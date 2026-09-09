@@ -1,4 +1,9 @@
-import { API_BASE_URL, ADMIN_API_KEY } from "../config.js";
+import { API_BASE_URL } from "../config.js";
+import { clearLegacyAdminMode, disableAdminSession, getAdminToken, isAdminAuthenticated } from "./adminSession.js";
+
+const ADMIN_METHODS = new Set(["POST", "PUT", "PATCH", "DELETE"]);
+
+clearLegacyAdminMode();
 
 async function parseApiResponse(response) {
     const text = await response.text();
@@ -25,25 +30,35 @@ async function parseApiResponse(response) {
 
 export async function apiRequest(path, options = {}) {
     const url = `${API_BASE_URL}${path}`;
-    const isAdminMode = window.localStorage.getItem("erickos-admin-mode") === "true";
+    const method = String(options.method || "GET").toUpperCase();
+    const isAdminWriteOperation = ADMIN_METHODS.has(method);
     const headers = {
         ...(options.headers || {}),
     };
 
-    if (isAdminMode) {
-        headers["X-ErickOS-Admin-Key"] = ADMIN_API_KEY;
+    if (isAdminWriteOperation) {
+        if (!isAdminAuthenticated()) {
+            throw new Error("Ação administrativa exige autenticação no modo admin para esta sessão.");
+        }
+
+        headers["X-ErickOS-Admin-Key"] = getAdminToken();
     }
 
     let response;
     try {
         response = await fetch(url, {
             ...options,
+            method,
             headers,
             mode: "cors",
             credentials: "omit",
         });
     } catch (error) {
         throw new Error(`Não foi possível conectar à API em ${url}. Verifique se o backend está rodando em ${API_BASE_URL}.`);
+    }
+
+    if (response.status === 403 && isAdminWriteOperation) {
+        disableAdminSession();
     }
 
     return parseApiResponse(response);
@@ -70,20 +85,7 @@ export async function putJson(path, data) {
 }
 
 export async function deleteJson(path) {
-    const response = await fetch(`${API_BASE_URL}${path}`, {
-        method: "DELETE",
-        headers: {
-            ...(window.localStorage.getItem("erickos-admin-mode") === "true" ? { "X-ErickOS-Admin-Key": ADMIN_API_KEY } : {}),
-        },
-        mode: "cors",
-        credentials: "omit",
-    });
-
-    if (response.status === 204) {
-        return null;
-    }
-
-    return parseApiResponse(response);
+    return apiRequest(path, { method: "DELETE" });
 }
 
 // Studies

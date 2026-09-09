@@ -23,16 +23,23 @@ export function getCalendarYear() {
 }
 
 
+function createUtcDate(year, monthIndex, dayOfMonth) {
+
+    return new Date(Date.UTC(year, monthIndex, dayOfMonth));
+
+}
+
+
 export function getYearStartDate(year) {
 
-    return new Date(year, 0, 1);
+    return createUtcDate(year, 0, 1);
 
 }
 
 
 export function getYearEndDate(year) {
 
-    return new Date(year, 11, 31);
+    return createUtcDate(year, 11, 31);
 
 }
 
@@ -56,8 +63,8 @@ export function getCalendarStartDate(year) {
 
     const calendarStart = new Date(yearStart);
 
-    calendarStart.setDate(
-        yearStart.getDate() - yearStart.getDay()
+    calendarStart.setUTCDate(
+        yearStart.getUTCDate() - yearStart.getUTCDay()
     );
 
     return calendarStart;
@@ -71,8 +78,8 @@ export function getCalendarEndDate(year) {
 
     const calendarEnd = new Date(yearEnd);
 
-    calendarEnd.setDate(
-        yearEnd.getDate() + (6 - yearEnd.getDay())
+    calendarEnd.setUTCDate(
+        yearEnd.getUTCDate() + (6 - yearEnd.getUTCDay())
     );
 
     return calendarEnd;
@@ -94,8 +101,8 @@ export function generateCalendarDates(year) {
 
         dates.push(new Date(currentDate));
 
-        currentDate.setDate(
-            currentDate.getDate() + 1
+        currentDate.setUTCDate(
+            currentDate.getUTCDate() + 1
         );
 
     }
@@ -122,7 +129,7 @@ export function getMonthPositions(year) {
         (name, monthIndex) => {
 
             const monthStart =
-                new Date(year, monthIndex, 1);
+                createUtcDate(year, monthIndex, 1);
 
             const differenceInDays =
                 Math.round(

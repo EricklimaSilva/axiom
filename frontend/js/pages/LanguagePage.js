@@ -1,5 +1,5 @@
 import { createConsistencyComponent } from "../dashboard/Consistency.js";
-import { destroySnake, initializeSnake } from "../dashboard/githubSnake.js";
+import { destroySnake, initializeSnake, updateSnake } from "../dashboard/githubSnake.js";
 import { createLanguage, deleteLanguage, getLanguages, updateLanguage } from "../services/api.js";
 
 let editingLanguageId = null;
@@ -53,15 +53,63 @@ function getLevelFromMinutes(minutes) {
     return 1;
 }
 
-function buildLanguageStudyDays(items = languageEntries) {
-    return Object.fromEntries(
-        items
-            .filter(item => item.date)
-            .map(item => [item.date, getLevelFromMinutes(item.duration_minutes)])
-    );
+function toCalendarDateKey(value) {
+    if (!value) {
+        return null;
+    }
+
+    if (value instanceof Date) {
+        if (Number.isNaN(value.getTime())) {
+            return null;
+        }
+
+        const year = value.getUTCFullYear();
+        const month = String(value.getUTCMonth() + 1).padStart(2, "0");
+        const day = String(value.getUTCDate()).padStart(2, "0");
+        return `${year}-${month}-${day}`;
+    }
+
+    const normalized = String(value).trim();
+    const directMatch = normalized.match(/(\d{4})-(\d{2})-(\d{2})/);
+    if (directMatch) {
+        const [, year, month, day] = directMatch;
+        return `${year}-${month}-${day}`;
+    }
+
+    const brazilianMatch = normalized.match(/(\d{2})[\/-](\d{2})[\/-](\d{4})/);
+    if (brazilianMatch) {
+        const [, day, month, year] = brazilianMatch;
+        return `${year}-${month}-${day}`;
+    }
+
+    const parsed = new Date(normalized);
+    if (Number.isNaN(parsed.getTime())) {
+        return null;
+    }
+
+    const year = parsed.getUTCFullYear();
+    const month = String(parsed.getUTCMonth() + 1).padStart(2, "0");
+    const day = String(parsed.getUTCDate()).padStart(2, "0");
+
+    return `${year}-${month}-${day}`;
 }
 
-function createLanguageList(items = languageEntries) {
+function buildLanguageStudyDays(items = languageEntries) {
+    return items.reduce((accumulator, item) => {
+        const dateKey = toCalendarDateKey(item.date);
+        if (!dateKey) {
+            return accumulator;
+        }
+
+        const level = getLevelFromMinutes(item.duration_minutes);
+        const previousLevel = Number(accumulator[dateKey] || 0);
+        accumulator[dateKey] = Math.max(previousLevel, level);
+
+        return accumulator;
+    }, {});
+}
+
+function createLanguageList(items = languageEntries, adminMode = false) {
     if (!items.length) {
         return `<p class="empty-state">Nenhuma sessão registrada ainda.</p>`;
     }
@@ -81,10 +129,12 @@ function createLanguageList(items = languageEntries) {
                         <span>Data: ${escapeHtml(item.date)}</span>
                         <span>Duração: ${(Number(item.duration_minutes || 0) / 60).toFixed(1)}h</span>
                         ${item.notes ? `<span>Notas: ${escapeHtml(item.notes)}</span>` : ""}
+                        ${adminMode ? `
                         <div class="language-session-actions">
                             <button type="button" class="study-action-btn edit" data-action="edit-language" data-language-id="${item.id}">Editar</button>
                             <button type="button" class="study-action-btn delete" data-action="delete-language" data-language-id="${item.id}">Excluir</button>
                         </div>
+                        ` : ""}
                     </div>
                 </li>
             `).join("")}
@@ -114,9 +164,13 @@ function renderLanguageConsistency() {
     const studyDays = buildLanguageStudyDays(languageEntries);
     container.innerHTML = createConsistencyComponent(studyDays, new Date().getFullYear());
 
+    // Wait for the new heatmap layout to settle before measuring cell positions.
     window.requestAnimationFrame(() => {
-        destroySnake();
-        initializeSnake();
+        window.requestAnimationFrame(() => {
+            destroySnake();
+            initializeSnake();
+            updateSnake();
+        });
     });
 }
 
@@ -186,6 +240,8 @@ export async function LanguagePage() {
         languageEntries = [];
     }
 
+    const adminMode = sessionStorage.getItem("erickos-admin-mode") === "true";
+
     return `
         <div class="page-content">
             <div class="content-container">
@@ -224,21 +280,22 @@ export async function LanguagePage() {
                     </article>
                 </section>
 
-                <section class="language-layout">
-                    <div class="language-column">
-                        ${buildLanguageForm()}
-                        <div class="recent-activity language-records-card">
-                            <div class="language-section-header">
-                                <h3>Últimos registros</h3>
-                                <p>Registros mais recentes do idioma selecionado.</p>
-                            </div>
-                            ${createLanguageList()}
-                        </div>
-                    </div>
+                <section class="language-consistency-section">
+                    ${createLanguageSnake()}
+                </section>
 
-                    <div class="recent-projects language-consistency-column">
-                        ${createLanguageSnake()}
+                ${adminMode ? `
+                <section class="language-form-section">
+                    ${buildLanguageForm()}
+                </section>
+                ` : ""}
+
+                <section class="recent-activity language-records-card language-records-section">
+                    <div class="language-section-header">
+                        <h3>Últimos registros</h3>
+                        <p>Registros mais recentes do idioma selecionado.</p>
                     </div>
+                    ${createLanguageList(languageEntries, adminMode)}
                 </section>
             </div>
         </div>
@@ -289,7 +346,16 @@ export function initLanguagePage() {
         return;
     }
 
+    const adminMode = sessionStorage.getItem("erickos-admin-mode") === "true";
+
     languageContainer.dataset.languageListenersAttached = "true";
+
+    if (!adminMode) {
+        window.requestAnimationFrame(() => {
+            renderLanguageConsistency();
+        });
+        return;
+    }
 
     languageContainer.addEventListener("submit", async event => {
         const form = event.target;

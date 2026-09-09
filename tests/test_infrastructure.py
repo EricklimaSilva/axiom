@@ -9,8 +9,11 @@ from extensions import db
 class InfrastructureTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
+        # Ensure tests run with a fixed admin API key so write routes can be exercised
+        TestingConfig.ADMIN_API_KEY = "test-admin-key"
         cls.app = create_app(TestingConfig)
         cls.client = cls.app.test_client()
+        cls.admin_headers = {"X-ErickOS-Admin-Key": "test-admin-key"}
 
     def setUp(self):
         with self.app.app_context():
@@ -18,10 +21,10 @@ class InfrastructureTests(unittest.TestCase):
             db.create_all()
 
     def post_json(self, path, payload):
-        return self.client.post(path, json=payload)
+        return self.client.post(path, json=payload, headers=self.admin_headers)
 
     def put_json(self, path, payload):
-        return self.client.put(path, json=payload)
+        return self.client.put(path, json=payload, headers=self.admin_headers)
 
     def test_application_bootstraps_with_database_config(self):
         self.assertIsNotNone(self.app)
@@ -94,7 +97,7 @@ class InfrastructureTests(unittest.TestCase):
         self.assertEqual(update_response.status_code, 200)
         self.assertEqual(update_response.get_json()["data"]["duration_minutes"], 120)
 
-        delete_response = self.client.delete(f"/api/studies/{study['id']}")
+        delete_response = self.client.delete(f"/api/studies/{study['id']}", headers=self.admin_headers)
         self.assertEqual(delete_response.status_code, 204)
 
         empty_response = self.client.get("/api/studies")
@@ -131,7 +134,7 @@ class InfrastructureTests(unittest.TestCase):
         self.assertEqual(update_response.status_code, 200)
         self.assertEqual(update_response.get_json()["data"]["status"], "completed")
 
-        delete_response = self.client.delete(f"/api/projects/{project['id']}")
+        delete_response = self.client.delete(f"/api/projects/{project['id']}", headers=self.admin_headers)
         self.assertEqual(delete_response.status_code, 204)
 
     def test_language_certificate_code_site_dashboard_and_settings(self):

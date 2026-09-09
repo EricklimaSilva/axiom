@@ -1,16 +1,5 @@
 import { navigate } from "../router.js";
-import { createSetting, getSettings, updateSetting } from "../services/api.js";
-
-const STORAGE_KEY = "erickos-admin-mode";
-const ADMIN_SETTING_KEY = "ui.admin_mode";
-
-function getAdminMode() {
-    return localStorage.getItem(STORAGE_KEY) === "true";
-}
-
-function setAdminMode(enabled) {
-    localStorage.setItem(STORAGE_KEY, String(enabled));
-}
+import { clearLegacyAdminMode, disableAdminSession, enableAdminSession, getAdminMode, isAdminAuthenticated } from "../services/adminSession.js";
 
 const settings = [
     {
@@ -57,26 +46,12 @@ function createSettingsMarkup(items = settings, adminMode) {
 }
 
 async function loadSettingsState() {
-    try {
-        const response = await getSettings();
-        const items = Array.isArray(response?.data) ? response.data : (Array.isArray(response) ? response : []);
-        const adminSetting = items.find(item => item.key === ADMIN_SETTING_KEY);
-        const adminMode = adminSetting ? adminSetting.value === "true" : getAdminMode();
+    clearLegacyAdminMode();
 
-        setAdminMode(adminMode);
-
-        return {
-            adminMode,
-            items: settings,
-        };
-    } catch (error) {
-        console.warn("Não foi possível carregar as configurações.", error);
-
-        return {
-            adminMode: getAdminMode(),
-            items: settings,
-        };
-    }
+    return {
+        adminMode: isAdminAuthenticated() && getAdminMode(),
+        items: settings,
+    };
 }
 
 export async function SettingsPage() {
@@ -109,21 +84,21 @@ export function initSettingsPage() {
     }
 
     toggleButton.addEventListener("click", async () => {
-        const enabled = !getAdminMode();
-        setAdminMode(enabled);
+        if (isAdminAuthenticated() && getAdminMode()) {
+            disableAdminSession();
+            navigate("settings");
+            return;
+        }
 
-        try {
-            const response = await getSettings();
-            const items = Array.isArray(response?.data) ? response.data : (Array.isArray(response) ? response : []);
-            const existing = items.find(item => item.key === ADMIN_SETTING_KEY);
+        const providedKey = window.prompt("Digite sua chave administrativa para esta sessão:", "");
+        if (providedKey === null) {
+            return;
+        }
 
-            if (existing) {
-                await updateSetting(existing.id, { key: ADMIN_SETTING_KEY, value: String(enabled) });
-            } else {
-                await createSetting({ key: ADMIN_SETTING_KEY, value: String(enabled) });
-            }
-        } catch (error) {
-            console.warn("Não foi possível persistir o modo administrador.", error);
+        const authenticated = enableAdminSession(providedKey);
+        if (!authenticated) {
+            window.alert("Chave administrativa inválida.");
+            return;
         }
 
         navigate("settings");

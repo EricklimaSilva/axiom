@@ -96,7 +96,7 @@ async function loadCertificates() {
 }
 
 export async function CertificatesPage() {
-    const adminMode = localStorage.getItem("erickos-admin-mode") === "true";
+    const adminMode = sessionStorage.getItem("erickos-admin-mode") === "true";
     const certificates = await loadCertificates();
 
     return `

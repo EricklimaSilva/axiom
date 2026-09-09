@@ -93,7 +93,7 @@ async function loadDashboards() {
 }
 
 export async function DashboardsPage() {
-    const adminMode = localStorage.getItem("erickos-admin-mode") === "true";
+    const adminMode = sessionStorage.getItem("erickos-admin-mode") === "true";
     const dashboards = await loadDashboards();
 
     return `

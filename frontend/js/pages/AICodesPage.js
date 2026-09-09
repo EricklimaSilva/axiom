@@ -98,7 +98,7 @@ async function loadCodes() {
 }
 
 export async function AICodesPage() {
-    const adminMode = localStorage.getItem("erickos-admin-mode") === "true";
+    const adminMode = sessionStorage.getItem("erickos-admin-mode") === "true";
     const aiCodes = await loadCodes();
 
     return `
