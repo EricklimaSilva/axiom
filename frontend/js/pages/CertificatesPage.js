@@ -21,39 +21,43 @@ function createCertificatesMarkup(items = [], adminMode = false) {
     }
 
     return `
-        <div class="certificate-shelf">
-            ${items.map(item => {
-                const src = escapeHtml(item.cover_image_path || "/assets/certificates/placeholder-certificado.svg");
-                const certUrl = escapeHtml(item.certificate_url || "");
-                return `
-                <article class="certificate-card" data-certificate-id="${item.id}" data-certificate-url="${certUrl}">
-                    <div class="certificate-cover">
-                        <a class="certificate-link" href="#" data-certificate-url="${certUrl}">
-                            <img src="${src}" alt="Certificado ${escapeHtml(item.name)}" onerror="this.onerror=null;this.src='/assets/certificates/placeholder-certificado.svg'">
-                            <div class="certificate-overlay">
-                                <div class="certificate-overlay-inner">
-                                    <h4>${escapeHtml(item.name)}</h4>
-                                    <p class="overlay-institution">${escapeHtml(item.institution || "Instituição")}</p>
-                                    <p class="overlay-date">${escapeHtml(item.issue_date || "Sem data")}</p>
+        <div class="certificate-carousel-wrapper">
+            <button type="button" class="certificate-nav-btn certificate-nav-prev" data-action="certificate-scroll" data-direction="prev" aria-label="Certificados anteriores" disabled>←</button>
+            <div class="certificate-shelf" aria-label="Galeria de certificados">
+                ${items.map(item => {
+                    const src = escapeHtml(item.cover_image_path || "/assets/certificates/placeholder-certificado.svg");
+                    const certUrl = escapeHtml(item.certificate_url || "");
+                    return `
+                    <article class="certificate-card" data-certificate-id="${item.id}" data-certificate-url="${certUrl}">
+                        <div class="certificate-cover">
+                            <a class="certificate-link" href="#" data-certificate-url="${certUrl}">
+                                <img src="${src}" alt="Certificado ${escapeHtml(item.name)}" onerror="this.onerror=null;this.src='/assets/certificates/placeholder-certificado.svg'">
+                                <div class="certificate-overlay">
+                                    <div class="certificate-overlay-inner">
+                                        <h4>${escapeHtml(item.name)}</h4>
+                                        <p class="overlay-institution">${escapeHtml(item.institution || "Instituição")}</p>
+                                        <p class="overlay-date">${escapeHtml(item.issue_date || "Sem data")}</p>
+                                    </div>
                                 </div>
-                            </div>
-                        </a>
-                    </div>
-                    <div class="certificate-content">
-                        <h3>${escapeHtml(item.name)}</h3>
-                        <p class="certificate-synopsis">${escapeHtml(item.description || "")}</p>
-                        <div class="certificate-footer">
-                            <span>${item.issue_date ? `Emitido em ${escapeHtml(item.issue_date)}` : "Sem data de emissão"}</span>
+                            </a>
                         </div>
-                        ${adminMode ? `
-                            <div class="study-edit-actions" style="margin-top: 16px;">
-                                <button type="button" class="study-action-btn edit" data-action="edit-certificate" data-certificate-id="${item.id}">Editar</button>
-                                <button type="button" class="study-action-btn delete" data-action="delete-certificate" data-certificate-id="${item.id}">Excluir</button>
+                        <div class="certificate-content">
+                            <h3>${escapeHtml(item.name)}</h3>
+                            <p class="certificate-synopsis">${escapeHtml(item.description || "")}</p>
+                            <div class="certificate-footer">
+                                <span>${item.issue_date ? `Emitido em ${escapeHtml(item.issue_date)}` : "Sem data de emissão"}</span>
                             </div>
-                        ` : ""}
-                    </div>
-                </article>
-            `}).join("")}
+                            ${adminMode ? `
+                                <div class="study-edit-actions" style="margin-top: 16px;">
+                                    <button type="button" class="study-action-btn edit" data-action="edit-certificate" data-certificate-id="${item.id}">Editar</button>
+                                    <button type="button" class="study-action-btn delete" data-action="delete-certificate" data-certificate-id="${item.id}">Excluir</button>
+                                </div>
+                            ` : ""}
+                        </div>
+                    </article>
+                `}).join("")}
+            </div>
+            <button type="button" class="certificate-nav-btn certificate-nav-next" data-action="certificate-scroll" data-direction="next" aria-label="Próximos certificados">→</button>
         </div>
     `;
 }
@@ -180,6 +184,45 @@ export function initCertificatesPage() {
 
     container.dataset.certificateListenersAttached = "true";
 
+    const updateCertificateNavButtons = () => {
+        const shelf = container.querySelector(".certificate-shelf");
+        const prevButton = container.querySelector(".certificate-nav-prev");
+        const nextButton = container.querySelector(".certificate-nav-next");
+
+        if (!shelf || !prevButton || !nextButton) {
+            return;
+        }
+
+        const isAtStart = shelf.scrollLeft <= 4;
+        const isAtEnd = shelf.scrollLeft + shelf.clientWidth >= shelf.scrollWidth - 4;
+
+        prevButton.disabled = isAtStart;
+        prevButton.setAttribute("aria-disabled", String(isAtStart));
+        nextButton.disabled = isAtEnd;
+        nextButton.setAttribute("aria-disabled", String(isAtEnd));
+    };
+
+    const handleCertificateScroll = event => {
+        const navButton = event.target.closest("[data-action='certificate-scroll']");
+        if (!navButton) {
+            return;
+        }
+
+        const shelf = container.querySelector(".certificate-shelf");
+        if (!shelf) {
+            return;
+        }
+
+        const card = shelf.querySelector(".certificate-card");
+        const cardWidth = card ? card.getBoundingClientRect().width + 16 : 516;
+        const direction = navButton.dataset.direction === "prev" ? -1 : 1;
+
+        shelf.scrollBy({
+            left: direction * cardWidth,
+            behavior: "smooth"
+        });
+    };
+
     container.addEventListener("submit", async event => {
         const form = event.target;
         if (!(form instanceof HTMLFormElement) || form.id !== "certificate-form") {
@@ -223,6 +266,12 @@ export function initCertificatesPage() {
         const editButton = event.target.closest("[data-action='edit-certificate']");
         const deleteButton = event.target.closest("[data-action='delete-certificate']");
         const cancelButton = event.target.closest("#certificate-cancel-edit");
+        const navButton = event.target.closest("[data-action='certificate-scroll']");
+
+        if (navButton) {
+            handleCertificateScroll(event);
+            return;
+        }
 
         if (editButton) {
             const certificateId = Number(editButton.dataset.certificateId);
@@ -280,6 +329,13 @@ export function initCertificatesPage() {
                 const text = card.textContent?.toLowerCase() || "";
                 card.style.display = text.includes(query) ? "" : "none";
             });
+            updateCertificateNavButtons();
         });
+    }
+
+    const shelf = container.querySelector(".certificate-shelf");
+    if (shelf) {
+        shelf.addEventListener("scroll", updateCertificateNavButtons, { passive: true });
+        updateCertificateNavButtons();
     }
 }
