@@ -178,11 +178,7 @@ export function initCertificatesPage() {
         return;
     }
 
-    if (container.dataset.certificateListenersAttached === "true") {
-        return;
-    }
-
-    container.dataset.certificateListenersAttached = "true";
+    const alreadyAttached = container.dataset.certificateListenersAttached === "true";
 
     const updateCertificateNavButtons = () => {
         const shelf = container.querySelector(".certificate-shelf");
@@ -223,116 +219,122 @@ export function initCertificatesPage() {
         });
     };
 
-    container.addEventListener("submit", async event => {
-        const form = event.target;
-        if (!(form instanceof HTMLFormElement) || form.id !== "certificate-form") {
-            return;
-        }
+    if (!alreadyAttached) {
+        container.dataset.certificateListenersAttached = "true";
 
-        event.preventDefault();
-        const feedback = document.getElementById("certificate-form-feedback");
-        const formData = new FormData(form);
-        const payload = {
-            name: formData.get("name") || "",
-            institution: formData.get("institution") || "",
-            issue_date: formData.get("issue_date") || "",
-            certificate_url: formData.get("certificate_url") || "",
-            cover_image_path: formData.get("cover_image_path") || "",
-            description: formData.get("description") || "",
-        };
-
-        if (feedback) {
-            feedback.textContent = editingCertificateId ? "Atualizando certificado..." : "Salvando certificado...";
-        }
-
-        try {
-            if (editingCertificateId) {
-                await updateCertificate(editingCertificateId, payload);
-            } else {
-                await createCertificate(payload);
+        container.addEventListener("submit", async event => {
+            const form = event.target;
+            if (!(form instanceof HTMLFormElement) || form.id !== "certificate-form") {
+                return;
             }
 
-            editingCertificateId = null;
-            await refreshCertificatesPage();
-        } catch (error) {
+            event.preventDefault();
+            const feedback = document.getElementById("certificate-form-feedback");
+            const formData = new FormData(form);
+            const payload = {
+                name: formData.get("name") || "",
+                institution: formData.get("institution") || "",
+                issue_date: formData.get("issue_date") || "",
+                certificate_url: formData.get("certificate_url") || "",
+                cover_image_path: formData.get("cover_image_path") || "",
+                description: formData.get("description") || "",
+            };
+
             if (feedback) {
-                feedback.textContent = error.message;
+                feedback.textContent = editingCertificateId ? "Atualizando certificado..." : "Salvando certificado...";
             }
-        }
-    });
 
-    container.addEventListener("click", async event => {
-        const feedback = document.getElementById("certificate-form-feedback");
-        const editButton = event.target.closest("[data-action='edit-certificate']");
-        const deleteButton = event.target.closest("[data-action='delete-certificate']");
-        const cancelButton = event.target.closest("#certificate-cancel-edit");
-        const navButton = event.target.closest("[data-action='certificate-scroll']");
-
-        if (navButton) {
-            handleCertificateScroll(event);
-            return;
-        }
-
-        if (editButton) {
-            const certificateId = Number(editButton.dataset.certificateId);
-            const certificates = await loadCertificates();
-            const certificate = certificates.find(item => Number(item.id) === certificateId);
-            if (certificate) {
-                populateCertificateForm(certificate);
-            }
-        }
-
-        if (deleteButton) {
-            const certificateId = Number(deleteButton.dataset.certificateId);
             try {
-                await deleteCertificate(certificateId);
-                if (editingCertificateId === certificateId) {
-                    editingCertificateId = null;
+                if (editingCertificateId) {
+                    await updateCertificate(editingCertificateId, payload);
+                } else {
+                    await createCertificate(payload);
                 }
+
+                editingCertificateId = null;
                 await refreshCertificatesPage();
             } catch (error) {
                 if (feedback) {
                     feedback.textContent = error.message;
                 }
             }
-        }
-
-        // handle clicks on certificate links / cards to open certificate_url in new tab
-        const certLink = event.target.closest('.certificate-link');
-        if (certLink) {
-            const url = certLink.dataset.certificateUrl;
-            if (url) {
-                window.open(url, '_blank', 'noopener');
-            }
-            event.preventDefault();
-            return;
-        }
-
-        const card = event.target.closest('.certificate-card');
-        if (card && !event.target.closest('.study-action-btn')) {
-            const url = card.dataset.certificateUrl;
-            if (url) {
-                window.open(url, '_blank', 'noopener');
-            }
-        }
-        if (cancelButton) {
-            editingCertificateId = null;
-            await refreshCertificatesPage();
-        }
-    });
-
-    const searchInput = document.getElementById("certificate-search");
-    if (searchInput) {
-        searchInput.addEventListener("input", () => {
-            const query = searchInput.value.trim().toLowerCase();
-            container.querySelectorAll(".certificate-card").forEach(card => {
-                const text = card.textContent?.toLowerCase() || "";
-                card.style.display = text.includes(query) ? "" : "none";
-            });
-            updateCertificateNavButtons();
         });
+
+        container.addEventListener("click", async event => {
+            const feedback = document.getElementById("certificate-form-feedback");
+            const editButton = event.target.closest("[data-action='edit-certificate']");
+            const deleteButton = event.target.closest("[data-action='delete-certificate']");
+            const cancelButton = event.target.closest("#certificate-cancel-edit");
+            const navButton = event.target.closest("[data-action='certificate-scroll']");
+
+            if (navButton) {
+                handleCertificateScroll(event);
+                return;
+            }
+
+            if (editButton) {
+                const certificateId = Number(editButton.dataset.certificateId);
+                const certificates = await loadCertificates();
+                const certificate = certificates.find(item => Number(item.id) === certificateId);
+                if (certificate) {
+                    populateCertificateForm(certificate);
+                }
+            }
+
+            if (deleteButton) {
+                const certificateId = Number(deleteButton.dataset.certificateId);
+                try {
+                    await deleteCertificate(certificateId);
+                    if (editingCertificateId === certificateId) {
+                        editingCertificateId = null;
+                    }
+                    await refreshCertificatesPage();
+                } catch (error) {
+                    if (feedback) {
+                        feedback.textContent = error.message;
+                    }
+                }
+            }
+
+            // handle clicks on certificate links / cards to open certificate_url in new tab
+            const certLink = event.target.closest('.certificate-link');
+            if (certLink) {
+                const url = certLink.dataset.certificateUrl;
+                if (url) {
+                    window.open(url, '_blank', 'noopener');
+                }
+                event.preventDefault();
+                return;
+            }
+
+            const card = event.target.closest('.certificate-card');
+            if (card && !event.target.closest('.study-action-btn')) {
+                const url = card.dataset.certificateUrl;
+                if (url) {
+                    window.open(url, '_blank', 'noopener');
+                }
+            }
+            if (cancelButton) {
+                editingCertificateId = null;
+                await refreshCertificatesPage();
+            }
+        });
+
+        const searchInput = document.getElementById("certificate-search");
+        if (searchInput) {
+            searchInput.addEventListener("input", () => {
+                const query = searchInput.value.trim().toLowerCase();
+                container.querySelectorAll(".certificate-card").forEach(card => {
+                    const text = card.textContent?.toLowerCase() || "";
+                    card.style.display = text.includes(query) ? "" : "none";
+                });
+                updateCertificateNavButtons();
+            });
+        }
     }
 
+    // Always (re)attach the scroll listener to the current shelf element so
+    // navigation button states stay in sync after re-rendering the inner HTML.
     const shelf = container.querySelector(".certificate-shelf");
     if (shelf) {
         shelf.addEventListener("scroll", updateCertificateNavButtons, { passive: true });
